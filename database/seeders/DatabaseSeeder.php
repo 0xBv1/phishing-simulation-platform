@@ -13,17 +13,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->command->info('🌱 Starting database seeding...');
+
+        // Seed in order to respect foreign key constraints
         $this->call([
             PlanSeeder::class,
             EmailTemplateSeeder::class,
             CompanySeeder::class,
+            UserSeeder::class,
+            PaymentSeeder::class,
+            CampaignSeeder::class,
+            CampaignTargetSeeder::class,
+            InteractionSeeder::class,
         ]);
 
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $this->command->info('✅ Database seeding completed successfully!');
     }
 }

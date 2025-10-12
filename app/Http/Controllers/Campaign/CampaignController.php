@@ -191,9 +191,15 @@ class CampaignController extends Controller
      *     )
      * )
      */
-    public function addTargets(AddTargetsRequest $request, string $campaignId)
+    public function addTargets(AddTargetsRequest $request, string $campaignId = null)
     {
         $company = $request->user();
+        
+        // If campaignId is not provided in the route, get it from the request
+        if (!$campaignId) {
+            $campaignId = $request->input('campaign_id');
+        }
+        
         $campaign = Campaign::findOrFail($campaignId);
         
         $this->authorize('addTargets', $campaign);

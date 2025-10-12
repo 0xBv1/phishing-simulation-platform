@@ -19,7 +19,7 @@ class CompanySeeder extends Seeder
         // Create a test company
         $company = Company::create([
             'name' => 'Test Company Inc.',
-            'email' => 'admin@testcompany.com',
+            'email' => 'admin@testcompanyinc.com',
             'password' => Hash::make('password123'),
             'plan_id' => 2, // Basic plan
         ]);
@@ -38,17 +38,17 @@ class CompanySeeder extends Seeder
             [
                 'campaign_id' => $campaign->id,
                 'name' => 'John Doe',
-                'email' => 'john.doe@testcompany.com',
+                'email' => 'john.doe@testcompanyinc.com',
             ],
             [
                 'campaign_id' => $campaign->id,
                 'name' => 'Jane Smith',
-                'email' => 'jane.smith@testcompany.com',
+                'email' => 'jane.smith@testcompanyinc.com',
             ],
             [
                 'campaign_id' => $campaign->id,
                 'name' => 'Bob Johnson',
-                'email' => 'bob.johnson@testcompany.com',
+                'email' => 'bob.johnson@testcompanyinc.com',
             ],
         ];
 

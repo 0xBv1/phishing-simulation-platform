@@ -15,22 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Configure rate limiting
         $middleware->throttleApi();
         
-        // Define custom rate limiters
-        $middleware->throttleWithRedis('auth', function () {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(5)->by(request()->ip());
-        });
-        
-        $middleware->throttleWithRedis('tracking', function () {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(60)->by(request()->ip());
-        });
-        
-        $middleware->throttleWithRedis('campaign', function () {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(30)->by(request()->ip());
-        });
-        
-        $middleware->throttleWithRedis('api', function () {
-            return \Illuminate\Cache\RateLimiting\Limit::perMinute(100)->by(request()->user()?->id ?? request()->ip());
-        });
+        // Register custom middleware aliases
+        $middleware->alias([
+            'check.role' => \App\Http\Middleware\CheckRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

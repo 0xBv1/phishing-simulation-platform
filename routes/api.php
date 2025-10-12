@@ -19,7 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Authentication Routes (with rate limiting)
-Route::prefix('auth')->middleware('throttle:auth')->group(function () {
+Route::prefix('auth')->middleware('throttle:api')->group(function () {
     Route::post('register', [App\Http\Controllers\Auth\AuthController::class, 'register']);
     Route::post('login', [App\Http\Controllers\Auth\AuthController::class, 'login']);
     Route::post('logout', [App\Http\Controllers\Auth\AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -29,16 +29,20 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
 });
 
 // Public Email Tracking Routes (with rate limiting)
-Route::prefix('track')->middleware('throttle:tracking')->group(function () {
+Route::prefix('track')->middleware('throttle:api')->group(function () {
     Route::get('/{token}/opened', [App\Http\Controllers\EmailTrackingController::class, 'trackOpen']);
     Route::get('/{token}/clicked', [App\Http\Controllers\EmailTrackingController::class, 'trackClick']);
     Route::post('/{token}/submitted', [App\Http\Controllers\EmailTrackingController::class, 'trackSubmit']);
 });
 
 // Public Campaign Routes (with rate limiting)
-Route::middleware('throttle:campaign')->group(function () {
-    Route::get('/campaign/{token}', [App\Http\Controllers\EmailTrackingController::class, 'showPhishingPage'])->name('phishing.page');
-    Route::post('/campaign/{token}/submit', [App\Http\Controllers\EmailTrackingController::class, 'trackSubmit']);
+// Constrain token to avoid conflicts with reserved words like "create"
+Route::middleware('throttle:api')->group(function () {
+    Route::get('/campaign/{token}', [App\Http\Controllers\EmailTrackingController::class, 'showPhishingPage'])
+        ->where('token', '[A-Za-z0-9\-_=]{20,}')
+        ->name('phishing.page');
+    Route::post('/campaign/{token}/submit', [App\Http\Controllers\EmailTrackingController::class, 'trackSubmit'])
+        ->where('token', '[A-Za-z0-9\-_=]{20,}');
     Route::get('/fake-phishing-page', [App\Http\Controllers\EmailTrackingController::class, 'showFakePhishingPage']);
 });
 
@@ -60,9 +64,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     // Campaign Routes
     Route::prefix('campaign')->group(function () {
-        Route::get('/templates', [App\Http\Controllers\Campaign\CampaignController::class, 'templates']);
-        Route::post('/create', [App\Http\Controllers\Campaign\CampaignController::class, 'create']);
+        Route::get('/templates', [App\Http\Controllers\Campaign\CampaignController::class, 'templates'])->name('api.campaign.templates');
+        Route::post('/create', [App\Http\Controllers\Campaign\CampaignController::class, 'create'])->name('api.campaign.create');
         Route::post('/add-targets', [App\Http\Controllers\Campaign\CampaignController::class, 'addTargets']);
+        Route::post('/{campaignId}/add-targets', [App\Http\Controllers\Campaign\CampaignController::class, 'addTargets']);
         Route::get('/{id}/details', [App\Http\Controllers\Campaign\CampaignController::class, 'details']);
         Route::post('/{id}/send-emails', [App\Http\Controllers\Campaign\CampaignController::class, 'sendEmails']);
         Route::get('/{id}/stats', [App\Http\Controllers\Campaign\CampaignController::class, 'stats']);
@@ -72,14 +77,14 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     // Legacy Campaign Routes (for backward compatibility)
     Route::prefix('campaigns')->group(function () {
-        Route::get('/', [App\Http\Controllers\Campaign\CampaignController::class, 'index']);
-        Route::post('/', [App\Http\Controllers\Campaign\CampaignController::class, 'store']);
-        Route::get('/{campaign}', [App\Http\Controllers\Campaign\CampaignController::class, 'show']);
-        Route::put('/{campaign}', [App\Http\Controllers\Campaign\CampaignController::class, 'update']);
-        Route::delete('/{campaign}', [App\Http\Controllers\Campaign\CampaignController::class, 'destroy']);
-        Route::post('/{campaign}/launch', [App\Http\Controllers\Campaign\CampaignController::class, 'launch']);
-        Route::post('/{campaign}/pause', [App\Http\Controllers\Campaign\CampaignController::class, 'pause']);
-        Route::post('/{campaign}/stop', [App\Http\Controllers\Campaign\CampaignController::class, 'stop']);
+        Route::get('/', [App\Http\Controllers\Campaign\CampaignController::class, 'index'])->name('api.campaign.index');
+        Route::post('/', [App\Http\Controllers\Campaign\CampaignController::class, 'store'])->name('api.campaign.store');
+        Route::get('/{campaign}', [App\Http\Controllers\Campaign\CampaignController::class, 'show'])->name('api.campaign.show');
+        Route::put('/{campaign}', [App\Http\Controllers\Campaign\CampaignController::class, 'update'])->name('api.campaign.update');
+        Route::delete('/{campaign}', [App\Http\Controllers\Campaign\CampaignController::class, 'destroy'])->name('api.campaign.destroy');
+        Route::post('/{campaign}/launch', [App\Http\Controllers\Campaign\CampaignController::class, 'launch'])->name('api.campaign.launch');
+        Route::post('/{campaign}/pause', [App\Http\Controllers\Campaign\CampaignController::class, 'pause'])->name('api.campaign.pause');
+        Route::post('/{campaign}/stop', [App\Http\Controllers\Campaign\CampaignController::class, 'stop'])->name('api.campaign.stop');
     });
 
     // Plans Routes (public)
